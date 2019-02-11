@@ -6,6 +6,7 @@ int THinit::init(void){
     readEepromString((eepromStart + ssidLength + eepromPadding + 1), (wifiPassLength + eepromPadding), wifi_password);
     longitude = EEPROM.readFloat(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 1);
     latitude = EEPROM.readFloat(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 4 + 1);
+    iotId = EEPROM.readInt(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 4 + 1 + 4 + 1);
 
     return 0;
 }
@@ -64,6 +65,12 @@ int THinit::getLatitude(float * ret){
     return 0;
 }
 
+int THinit::getIotId(int * ret){
+    *ret = iotId;
+
+    return 0;
+}
+
 int THinit::setSSID(char * ssid, int length){
     THinit::writeEepromString(eepromStart, length, ssid);
     strCpy(wifi_ssid,ssid,length);
@@ -79,10 +86,10 @@ int THinit::setWifiPassword(char* wifiPass, int length){
 }
 
 int THinit::setLongitude(float longitud){
-    Serial.println("Entered setLongitude");
-    Serial.print("longitud = ");
-    Serial.println(longitud,6);
-    Serial.println("Writting to EEPROM");
+//    Serial.println("Entered setLongitude");
+//    Serial.print("longitud = ");
+//    Serial.println(longitud,6);
+//    Serial.println("Writting to EEPROM");
     EEPROM.writeFloat((eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 1), longitud);
     EEPROM.commit();
     longitude = longitud;
@@ -94,6 +101,14 @@ int THinit::setLatitude(float latitud){
     EEPROM.writeFloat(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 4 + 1, latitud);
     EEPROM.commit();
     latitude = latitud;
+
+    return 0;
+}
+
+int THinit::setIotId(int iotid){
+    EEPROM.writeFloat(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 4 + 1 + 4 + 1, iotid);
+    EEPROM.commit();
+    iotId = iotid;
 
     return 0;
 }
