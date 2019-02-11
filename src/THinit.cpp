@@ -106,7 +106,7 @@ int THinit::setLatitude(float latitud){
 }
 
 int THinit::setIotId(int iotid){
-    EEPROM.writeFloat(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 4 + 1 + 4 + 1, iotid);
+    EEPROM.writeInt(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 4 + 1 + 4 + 1, iotid);
     EEPROM.commit();
     iotId = iotid;
 
