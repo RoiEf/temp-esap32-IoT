@@ -43,43 +43,53 @@ int fl2;
 
 HTTPClient http;
 
-String json = "{\"longitude\":\"AAAAAAAAA\",\"latitude\":\"BBBBBBBBB\",\"temp\":\"CCCCC\",\"grade\":\"c\",\"humid\":\"DDDDD\",\"mark\": \"%\"}";
-    float longi;
-    float latit;
+// String json = "{\"longitude\":\"AAAAAAAAA\",\"latitude\":\"BBBBBBBBB\",\"temp\":\"CCCCC\",\"grade\":\"c\",\"humid\":\"DDDDD\",\"mark\": \"%\"}";
+String json = "{\"iotId\":\"IIII\",\"temp\":\"CCCCC\",\"grade\":\"c\",\"humid\":\"DDDDD\",\"mark\": \"%\"}";
+//    float longi;
+//    float latit;
+
+    int iotId;
+    char name[15] = "";
+    char description[50] = "";
 
 void setup() {
-// Serial.begin(9600);                                      //Start Serial monitor in 9600
+ Serial.begin(9600);                                      //Start Serial monitor in 9600
     pinMode(ledPin,OUTPUT);
     digitalWrite(ledPin,LOW);
     fl2 = 0;
 
   ESP_BT.begin("Temp_IoT_Control");                      //Name of your Bluetooth Signal
-//  Serial.println("Bluetooth Device is Ready to Pair");
+  Serial.println("Bluetooth Device is Ready to Pair");
 
     dht.begin();                                         // starting communications with the DHT module.
 
     initObj.init();
     initObj.getSSID(ssid);
     initObj.getWifiPassword(password);
-    initObj.getLongitude(&longi);
-    initObj.getLatitude(&latit);
+//    initObj.getLongitude(&longi);
+//    initObj.getLatitude(&latit);
+    initObj.getIotId(&iotId);
 
- //   Serial.print("ssid = ");
- //   Serial.println(ssid);
- //   Serial.print("wifi password = ");
- //   Serial.println(password);
+    Serial.print("ssid = ");
+    Serial.println(ssid);
+    Serial.print("wifi password = ");
+    Serial.println(password);
  //   Serial.print("Longitude = ");
  //   Serial.println(longi,6);
  //   Serial.print("Latitude = ");
  //   Serial.println(latit,6);
+    Serial.print("IoT ID = ");
+    Serial.println(iotId);
 
     String tStr;
-    tStr = String(longi,6);
-    json.replace("AAAAAAAAA",tStr);
-    tStr = String(latit,6);
-    json.replace("BBBBBBBBB",tStr);
+//    tStr = String(longi,6);
+//    json.replace("AAAAAAAAA",tStr);
+//    tStr = String(latit,6);
+//    json.replace("BBBBBBBBB",tStr);
+    tStr = String(iotId);
+    json.replace("IIII", tStr);
 
- //   Serial.println(json);
+    Serial.println(json);
 }
 
 void loop() {
@@ -94,8 +104,6 @@ void loop() {
         }
         
     }
-    
-
 
     if (wifiConnected == 0) {
         if (ssid[0] != '\0') {
@@ -105,7 +113,7 @@ void loop() {
             while(WiFi.status() != WL_CONNECTED){
 
                 delay(500);
- //               Serial.println("connecting to WiFi");
+                Serial.println("connecting to WiFi");
 
                 if (wifiTmr.checkInterval()) {
  //                   Serial.println("Can\'t connect to wifi");
@@ -129,8 +137,17 @@ void loop() {
         if (ESP_BT.available()) {
             while (ESP_BT.available()) {
                 btIn[btInPt] = ESP_BT.read(); //Read what we recevive
+
+                Serial.print("btIn[");
+                Serial.print(btInPt);
+                Serial.print("] = ");
+                Serial.println(btIn[btInPt]);
+
                 btInPt ++;
-            }
+
+                Serial.print("btInPt = ");
+                Serial.println(btInPt);
+}
 
         if (setupStage == 2) {
             int i;
@@ -195,35 +212,61 @@ void loop() {
                     btBlackOut.setDelta(2,minuet);
                     btBlackOut.resetTimer();
                     setupStage = 0;
+                    for(int i = 0; i < 63; i++)
+                    {
+                       btIn[i] = '\0';
+                    }
                 }
             }
             if (flag == 0) {
                     ESP_BT.println("Entering Setup");
                     setupStage = 1;
+                    for(int i = 0; i < 63; i++)
+                    {
+                       btIn[i] = '\0';
+                    }
             }
+/*        } else if (setupStage == 1 && btInPt == 2){
+            if (btIn[0] == 49 && btIn[1] == 48) {
+                ESP_BT.println("Ready to set IoT Id");
+                setupStage = 10;
+            }
+*/        }
+        else if (setupStage == 9) { // setting id
+            Serial.println("Entered set id");
+            int i;
+            i = atoi(btIn);
+            Serial.print("i = ");
+            Serial.println(i);
+            initObj.setIotId(i);
+
+            setupStage = 1;
+            initObj.getIotId(&i);
+            Serial.print("i from Update = ");
+            Serial.println(i);
+
         }
-        
         else {
-            if (btIn[0] == 48 &&  setupStage == 1)
+            if (btIn[0] == 48 &&  setupStage == 1)          // 0
                 {
                     ESP_BT.println("Out of setup");
                     setupStage = 7;
                 }
-            else if (btIn[0] == 49 && setupStage == 0)
+            else if (btIn[0] == 49 && setupStage == 0)      // 1
             {
                 ESP_BT.println("Input Pin Code");
                 setupStage = 6;
             }
-            else if (btIn[0] == 49 && setupStage == 7)
+            else if (btIn[0] == 49 && setupStage == 7)      // 1
             {
                 ESP_BT.println("Entering Setup");
                 setupStage = 1;
             }
-            else if (btIn[0] == 50 && setupStage == 1) {
+            else if (btIn[0] == 50 && setupStage == 1) {     // 2
                 ESP_BT.println("Ready to set SSID");
                 setupStage = 2;
             }
-            else if (btIn[0] == 51 && setupStage == 1) {
+            else if (btIn[0] == 51 && setupStage == 1) {    // 3
                 ESP_BT.println("Ready to set WiFi Password");
                 setupStage = 3;
             }
@@ -235,7 +278,20 @@ void loop() {
                 ESP_BT.println("Ready to set WiFi Latitude");
                 setupStage = 5;
             }
-            else if (btIn[0] == 55 && setupStage == 1) {    // 7
+            else if (btIn[0] == 54 && setupStage == 1) {    // 6
+                ESP_BT.println("Ready to set IoT ID");
+                setupStage = 9;
+            }
+/*            else if (btIn[0] == 55 && setupStage == 1) {    // 7
+                ESP_BT.println("Ready to set Station Name");
+                setupStage = 10;
+            }
+            else if (btIn[0] == 56 && setupStage == 1) {    // 8
+                ESP_BT.println("Ready to set Station Description");
+                setupStage = 11;
+            }
+*/            
+            else if (btIn[0] == 57 && setupStage == 1) {    // 9
                 ESP_BT.println("Are you sure you want to reset?");
                 setupStage = 7;
             }
@@ -284,48 +340,48 @@ void loop() {
         // Read temperature as Celsius (the default)
         float t = dht.readTemperature();
 
- //       if (isnan(h) || isnan(t)) {
- //           Serial.println(F("Failed to read from DHT sensor!"));
- //       }
-//        Serial.print(F("Humidity: "));
-//        Serial.print(h);
-//        Serial.print(F("%  Temperature: "));
-//        Serial.println(t);
+        if (isnan(h) || isnan(t)) {
+            Serial.println(F("Failed to read from DHT sensor!"));
+        }
+      Serial.print(F("Humidity: "));
+        Serial.print(h);
+        Serial.print(F("%  Temperature: "));
+        Serial.println(t);
 
         if (wifiConnected > 0) {
-//           Serial.println("Connected to Wifi network");
-//           Serial.println(WiFi.localIP());
+           Serial.println("Connected to Wifi network");
+           Serial.println(WiFi.localIP());
 
             String tStr;
             tStr = String(t,2);
             json.replace("CCCCC",tStr);
             tStr = String(h,2);
             json.replace("DDDDD",tStr);
-//            Serial.print("json = ");
-//            Serial.println(json);
+            Serial.print("json = ");
+            Serial.println(json);
 
-//            Serial.println("Opening HTTP.");
+            Serial.println("Opening HTTP.");
             http.begin("temp.efrati.info",44404,"/iotApi"); // http.begin("192.168.0.109",4000,"/iotApi");
             http.addHeader("Content-Type", "application/json");
             int httpCode = http.POST(json);
-//            if (httpCode > 0) {
-//                Serial.println("Data posted.");
-//                Serial.printf("[HTTP] Post... code: %d\n", httpCode);
-//            } else {
-//                Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
-//            }
-//            Serial.println("Closing HTTP.");
+            if (httpCode > 0) {
+                Serial.println("Data posted.");
+                Serial.printf("[HTTP] Post... code: %d\n", httpCode);
+            } else {
+                Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+            }
+            Serial.println("Closing HTTP.");
             http.end();
         } 
-//        else {
-//             Serial.println("WiFi Not connected");
-//        }
+        else {
+             Serial.println("WiFi Not connected");
+        }
         json = json2;
     }
 }
 
 void hard_restart() {
-//    Serial.println("Resetting!!!");
+    Serial.println("Resetting!!!");
     ESP_BT.end();
     if (WiFi.status() == WL_CONNECTED) {
         WiFi.disconnect();
