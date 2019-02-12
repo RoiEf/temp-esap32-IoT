@@ -18,7 +18,8 @@
 
 // Function defenitions
 void hard_restart(void);
-void replaceSubString(char *, char *, int);
+// void replaceSubString(char *, char *, int);
+int flashBtBuffer (char *);
 
 char ssid[32] = "";
 char password[63] = "";
@@ -167,7 +168,7 @@ void loop() {
 
             initObj.setSSID(ssid,i);
             
-            btIn[0] = 99;
+            flashBtBuffer(btIn);
             setupStage = 1;
         
         }
@@ -182,7 +183,7 @@ void loop() {
 
             initObj.setWifiPassword(password,i);
            
-            btIn[0] = 99;
+            flashBtBuffer(btIn);
             setupStage = 1;
 
         }
@@ -192,6 +193,7 @@ void loop() {
             initObj.setLongitude(i);
 
             setupStage = 1;
+            flashBtBuffer(btIn);
         }
         else if (setupStage == 5) { // setting Latitude
             float i;
@@ -199,6 +201,7 @@ void loop() {
             initObj.setLatitude(i);
 
             setupStage = 1;
+            flashBtBuffer(btIn);
         }
         else if (setupStage == 6) {         // Check pin code
             int i;
@@ -219,25 +222,20 @@ void loop() {
                     btBlackOut.setDelta(2,minuet);
                     btBlackOut.resetTimer();
                     setupStage = 0;
-                    for(int i = 0; i < 63; i++)
-                    {
-                       btIn[i] = '\0';
-                    }
+                    flashBtBuffer(btIn);
                 }
             }
             if (flag == 0) {
-                    ESP_BT.println("Entering Setup");
-                    setupStage = 1;
-                    for(int i = 0; i < 63; i++)
-                    {
-                       btIn[i] = '\0';
-                    }
+                ESP_BT.println("Entering Setup");
+                setupStage = 1;
+                flashBtBuffer(btIn);
             }
         } 
         else if (setupStage == 1 && btInPt == 2){               // Option 10. EEPROM reset
             if (btIn[0] == 49 && btIn[1] == 48) {               // setting setupStage = 8
                 ESP_BT.println("Are you sure you want to cleare the EEPROM?");
                 setupStage = 8;
+                flashBtBuffer(btIn);
             }
         }
         else if (setupStage == 10) {                            // Actually setting IoT station Name
@@ -252,10 +250,7 @@ void loop() {
             initObj.setName(name,i);
             
             setupStage = 1;
-            for(int i = 0; i < 63; i++)
-            {
-                btIn[i] = '\0';
-            }
+            flashBtBuffer(btIn);
         }
         else if (setupStage == 11) {                            // Actually setting IoT Description
             int i;                                              // setting setupStage = 1
@@ -269,10 +264,7 @@ void loop() {
             initObj.setDescription(description,i);
             
             setupStage = 1;
-            for(int i = 0; i < 63; i++)
-            {
-                btIn[i] = '\0';
-            }
+            flashBtBuffer(btIn);
         }
         else if (setupStage == 9) { // setting id
             int i;
@@ -280,56 +272,67 @@ void loop() {
             initObj.setIotId(i);
 
             setupStage = 1;
-            initObj.getIotId(&i);
+            flashBtBuffer(btIn);
         }
         else {
             if (btIn[0] == 48 &&  setupStage == 1)          // 0
                 {
                     ESP_BT.println("Out of setup");
                     setupStage = 7;
+                    flashBtBuffer(btIn);
                 }
             else if (btIn[0] == 49 && setupStage == 0)      // 1
             {
                 ESP_BT.println("Input Pin Code");
                 setupStage = 6;
+                flashBtBuffer(btIn);
             }
             else if (btIn[0] == 49 && setupStage == 7)      // 1
             {
                 ESP_BT.println("Entering Setup");
                 setupStage = 1;
+                flashBtBuffer(btIn);
             }
             else if (btIn[0] == 50 && setupStage == 1) {     // 2
                 ESP_BT.println("Ready to set SSID");
                 setupStage = 2;
+                flashBtBuffer(btIn);
             }
             else if (btIn[0] == 51 && setupStage == 1) {    // 3
                 ESP_BT.println("Ready to set WiFi Password");
                 setupStage = 3;
+                flashBtBuffer(btIn);
             }
             else if (btIn[0] == 52 && setupStage == 1) {    // 4
                 ESP_BT.println("Ready to set Longitude");
                 setupStage = 4;
+                flashBtBuffer(btIn);
             }
             else if (btIn[0] == 53 && setupStage == 1) {    // 5
                 ESP_BT.println("Ready to set WiFi Latitude");
                 setupStage = 5;
+                flashBtBuffer(btIn);
             }
             else if (btIn[0] == 54 && setupStage == 1) {    // 6
                 ESP_BT.println("Ready to set IoT ID");
                 setupStage = 9;
+                flashBtBuffer(btIn);
             }
             else if (btIn[0] == 55 && setupStage == 1) {    // 7
                 ESP_BT.println("Ready to set Station Name");
                 setupStage = 10;
+                flashBtBuffer(btIn);
             }
             else if (btIn[0] == 56 && setupStage == 1) {    // 8
                 ESP_BT.println("Ready to set Station Description");
                 setupStage = 11;
+                flashBtBuffer(btIn);
             }
             
             else if (btIn[0] == 57 && setupStage == 1) {    // 9
                 ESP_BT.println("Are you sure you want to reset?");
                 setupStage = 7;
+                flashBtBuffer(btIn);
             }
             else if ((btIn[0] == 89 || btIn[0] == 121) && setupStage == 7) {
                 ESP_BT.println("Resetting system!!!");
@@ -339,16 +342,19 @@ void loop() {
             else if ((btIn[0] != 89 || btIn[0] != 121) && setupStage == 7) {
                 ESP_BT.println("Back to setup sequence");
                 setupStage = 1;
+                flashBtBuffer(btIn);
             }
             else if ((btIn[0] == 89 || btIn[0] == 121) && setupStage == 8) {
                 ESP_BT.println("Clearing EEPROM!!!");
                 delay(25);
                 initObj.resetEEPROM();
                 setupStage = 1;
+                flashBtBuffer(btIn);
             }
             else if ((btIn[0] != 89 || btIn[0] != 121) && setupStage == 8) {
                 ESP_BT.println("Back to setup sequence");
                 setupStage = 1;
+                flashBtBuffer(btIn);
             }
             
         }
@@ -427,4 +433,12 @@ void hard_restart() {
     esp_task_wdt_init(1,true);
     esp_task_wdt_add(NULL);
     while(true);
+}
+
+int flashBtBuffer (char * btIn) {
+    for(int i = 0; i < 63; i++)
+    {
+        btIn[i] = '\0';
+    }
+    return 0;
 }
