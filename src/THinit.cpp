@@ -3,10 +3,12 @@
 int THinit::init(void){
     EEPROM.begin(EEPROM_SIZE);
     readEepromString(eepromStart, (ssidLength + eepromPadding), wifi_ssid);
-    readEepromString((eepromStart + ssidLength + eepromPadding + 1), (wifiPassLength + eepromPadding), wifi_password);
-    longitude = EEPROM.readFloat(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 1);
-    latitude = EEPROM.readFloat(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 4 + 1);
-    iotId = EEPROM.readInt(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 4 + 1 + 4 + 1);
+    readEepromString((wifiPassStart), (wifiPassLength + eepromPadding), wifi_password);
+    longitude = EEPROM.readFloat(longitudeStart);
+    latitude = EEPROM.readFloat(latitudeStart);
+    iotId = EEPROM.readInt(iotIdStart);
+    readEepromString((nameStart), (nameLength + eepromPadding), iotName);
+    readEepromString((descriptionStart), (descriptionLength + eepromPadding), iotDescription);
 
     return 0;
 }
@@ -71,6 +73,18 @@ int THinit::getIotId(int * ret){
     return 0;
 }
 
+int THinit::getName(char * iotname){
+    strCpy(iotname, iotName, nameLength);
+
+    return 0;
+}
+
+int THinit::getDescription(char * iotdescription){
+    strCpy(iotdescription, iotDescription, descriptionLength);
+
+    return 0;
+}
+
 int THinit::setSSID(char * ssid, int length){
     THinit::writeEepromString(eepromStart, length, ssid);
     strCpy(wifi_ssid,ssid,length);
@@ -86,10 +100,6 @@ int THinit::setWifiPassword(char* wifiPass, int length){
 }
 
 int THinit::setLongitude(float longitud){
-//    Serial.println("Entered setLongitude");
-//    Serial.print("longitud = ");
-//    Serial.println(longitud,6);
-//    Serial.println("Writting to EEPROM");
     EEPROM.writeFloat((eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 1), longitud);
     EEPROM.commit();
     longitude = longitud;
@@ -109,6 +119,20 @@ int THinit::setIotId(int iotid){
     EEPROM.writeInt(eepromStart + ssidLength + eepromPadding + wifiPassLength + eepromPadding + 4 + 1 + 4 + 1, iotid);
     EEPROM.commit();
     iotId = iotid;
+
+    return 0;
+}
+
+int THinit::setName(char * iotid, int length){
+    THinit::writeEepromString(nameStart, length, iotid);
+    strCpy(iotName,iotid,length);
+
+    return 0;
+}
+
+int THinit::setDescription(char * description, int length){
+    THinit::writeEepromString(descriptionStart, length, description);
+    strCpy(iotDescription,description,length);
 
     return 0;
 }
