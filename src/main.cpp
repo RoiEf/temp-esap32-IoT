@@ -1,3 +1,6 @@
+#define DEBUGLEVEL -1
+#include <DebugUtils.h>     // pre compiled directives for easyer debugging and serial disconnect at production
+
 #include <Arduino.h>
 #include "BluetoothSerial.h"                              //Header File for Serial Bluetooth
 #include <WiFi.h>
@@ -54,13 +57,15 @@ String json = "{\"iotId\":\"IIII\",\"temp\":\"CCCCC\",\"grade\":\"c\",\"humid\":
     char description[50] = "";
 
 void setup() {
-//  Serial.begin(9600);                                      //Start Serial monitor in 9600
+    DEBUGSERIALBEGIN(115200);                            //Start Serial monitor in 115200 // Serial.begin
+    
     pinMode(ledPin,OUTPUT);
     digitalWrite(ledPin,LOW);
     fl2 = 0;
 
   ESP_BT.begin("Temp_IoT_Control");                      //Name of your Bluetooth Signal
-//   Serial.println("Bluetooth Device is Ready to Pair");
+    
+    DEBUGPRINTLN1("Bluetooth Device is Ready to Pair");
 
     dht.begin();                                         // starting communications with the DHT module.
 
