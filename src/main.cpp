@@ -420,6 +420,11 @@ void loop() {
 */
         json = json2;
     }
+
+    if (WiFi.status() != WL_CONNECTED) {
+        wifiConnected = 0;
+    }
+
 }
 
 void hard_restart() {
