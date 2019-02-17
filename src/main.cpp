@@ -422,7 +422,9 @@ void loop() {
     }
 
     if (WiFi.status() != WL_CONNECTED) {
-        wifiConnected = 0;
+        if (wifiConnected > 0) {
+            wifiConnected = 0;
+        }
     }
 
 }
